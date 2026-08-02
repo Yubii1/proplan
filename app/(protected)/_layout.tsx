@@ -35,12 +35,12 @@ function ProtectedLayoutContent() {
         <Pressable
           onPress={closeSidebar}
           style={{
-            position: 'absolute',
+            position: "absolute",
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.2)',
+            backgroundColor: "rgba(0,0,0,0.2)",
             zIndex: 4,
           }}
         />
