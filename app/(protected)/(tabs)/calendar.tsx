@@ -1,27 +1,27 @@
-import TopBar from '@/src/components/TopBar';
-import { useSidebar } from '@/src/context/SidebarContext';
-import { supabase } from '@/src/lib/supabase';
-import * as Notifications from 'expo-notifications';
-import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, Button, FlatList, StyleSheet, Text, View } from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import { colors, spacing } from '../../../src/theme/theme';
+import TopBar from "@/src/components/TopBar";
+import { useSidebar } from "@/src/context/SidebarContext";
+import { supabase } from "@/src/lib/supabase";
+import * as Notifications from "expo-notifications";
+import React, { useEffect, useMemo, useState } from "react";
+import { Alert, Button, FlatList, StyleSheet, Text, View } from "react-native";
+import { Calendar } from "react-native-calendars";
+import { colors, spacing } from "../../../src/theme/theme";
 
 export default function CalendarScreen() {
   const openSidebar = useSidebar();
   const [projects, setProjects] = useState<any[]>([]);
 
-  // ✅ Fetch only pending projects
+  // Fetch only pending projects
   useEffect(() => {
     const fetchProjects = async () => {
       const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('status', 'pending');
+        .from("projects")
+        .select("*")
+        .eq("status", "pending");
 
       if (error) {
         console.error(error);
-        Alert.alert('Error fetching projects', error.message);
+        Alert.alert("Error fetching projects", error.message);
       } else {
         setProjects(data);
       }
@@ -30,12 +30,12 @@ export default function CalendarScreen() {
     fetchProjects();
   }, []);
 
-  // ✅ Mark deadlines on the calendar
+  // Mark deadlines on the calendar
   const marked = useMemo(() => {
     const marks: Record<string, any> = {};
     projects.forEach((project) => {
       if (project.due_date) {
-        const dateStr = project.due_date.split('T')[0]; // format YYYY-MM-DD
+        const dateStr = project.due_date.split("T")[0]; // format YYYY-MM-DD
         marks[dateStr] = {
           marked: true,
           dotColor: colors.secondary,
@@ -46,7 +46,7 @@ export default function CalendarScreen() {
     return marks;
   }, [projects]);
 
-  // ✅ Schedule local notification
+  // Schedule local notification
   const scheduleNotification = async (project: any) => {
     if (!project.due_date) return;
 
@@ -58,7 +58,7 @@ export default function CalendarScreen() {
       trigger: new Date(project.due_date), // fire at deadline
     });
 
-    Alert.alert('Alarm Set', `Notification scheduled for ${project.title}`);
+    Alert.alert("Alarm Set", `Notification scheduled for ${project.title}`);
   };
 
   return (
@@ -72,11 +72,11 @@ export default function CalendarScreen() {
       <View style={styles.card}>
         <Calendar
           theme={{
-            backgroundColor: '#fff',
-            calendarBackground: '#fff',
+            backgroundColor: "#fff",
+            calendarBackground: "#fff",
             textSectionTitleColor: colors.primary,
             selectedDayBackgroundColor: colors.primary,
-            selectedDayTextColor: '#fff',
+            selectedDayTextColor: "#fff",
             todayTextColor: colors.secondary,
             dayTextColor: colors.textPrimary,
             monthTextColor: colors.primary,
@@ -97,9 +97,15 @@ export default function CalendarScreen() {
           renderItem={({ item }) => (
             <View style={styles.itemRow}>
               <Text style={styles.item}>
-                • {item.title} — {item.due_date ? new Date(item.due_date).toLocaleString() : 'No deadline'}
+                • {item.title} —{" "}
+                {item.due_date
+                  ? new Date(item.due_date).toLocaleString()
+                  : "No deadline"}
               </Text>
-              <Button title="Set Alarm" onPress={() => scheduleNotification(item)} />
+              <Button
+                title="Set Alarm"
+                onPress={() => scheduleNotification(item)}
+              />
             </View>
           )}
         />
@@ -111,27 +117,27 @@ export default function CalendarScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     margin: spacing.md,
     borderRadius: 16,
     padding: spacing.md,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowRadius: 6,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
   },
   listCard: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     marginHorizontal: spacing.md,
     borderRadius: 16,
     padding: spacing.md,
     borderWidth: 1,
-    borderColor: '#eee',
+    borderColor: "#eee",
   },
   heading: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: "700",
     color: colors.textPrimary,
     marginBottom: spacing.sm,
   },

@@ -1,9 +1,9 @@
 // app/index.tsx
-import { useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { useAuth } from '../src/context/Authprovider';
-import { colors, spacing } from '../src/theme/theme';
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useAuth } from "../src/context/Authprovider";
+import { colors, spacing } from "../src/theme/theme";
 
 export default function Index() {
   const router = useRouter();
@@ -11,7 +11,7 @@ export default function Index() {
 
   useEffect(() => {
     if (!loading && session) {
-      router.replace('/(tabs)'); // replace with your home route
+      router.replace("/(protected)/(tabs)"); // replace with your home route
     }
   }, [loading, session]);
 
@@ -24,7 +24,7 @@ export default function Index() {
       <Text style={styles.title}>Proplan</Text>
       <TouchableOpacity
         style={styles.button}
-        onPress={() => router.push('/auth/login')}
+        onPress={() => router.push("/auth/login")}
       >
         <Text style={styles.buttonText}>Tap to Continue</Text>
       </TouchableOpacity>
@@ -36,12 +36,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   title: {
     fontSize: 36,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     color: colors.primary,
     marginBottom: spacing.lg,
   },
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
   },
 });

@@ -50,7 +50,7 @@ export default function LoginScreen() {
     }
 
     console.log("Logged in user profile:", profile);
-    router.push("/(tabs)");
+    router.push("/(protected)/(tabs)");
   };
 
   return (
