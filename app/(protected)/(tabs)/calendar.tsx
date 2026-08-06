@@ -34,8 +34,8 @@ export default function CalendarScreen() {
   const marked = useMemo(() => {
     const marks: Record<string, any> = {};
     projects.forEach((project) => {
-      if (project.deadline) {
-        const dateStr = project.deadline.split('T')[0]; // format YYYY-MM-DD
+      if (project.due_date) {
+        const dateStr = project.due_date.split('T')[0]; // format YYYY-MM-DD
         marks[dateStr] = {
           marked: true,
           dotColor: colors.secondary,
@@ -48,14 +48,14 @@ export default function CalendarScreen() {
 
   // ✅ Schedule local notification
   const scheduleNotification = async (project: any) => {
-    if (!project.deadline) return;
+    if (!project.due_date) return;
 
     await Notifications.scheduleNotificationAsync({
       content: {
         title: `Reminder: ${project.title}`,
         body: `Project "${project.title}" is due soon.`,
       },
-      trigger: new Date(project.deadline), // fire at deadline
+      trigger: new Date(project.due_date), // fire at deadline
     });
 
     Alert.alert('Alarm Set', `Notification scheduled for ${project.title}`);
@@ -97,7 +97,7 @@ export default function CalendarScreen() {
           renderItem={({ item }) => (
             <View style={styles.itemRow}>
               <Text style={styles.item}>
-                • {item.title} — {item.deadline ? new Date(item.deadline).toLocaleString() : 'No deadline'}
+                • {item.title} — {item.due_date ? new Date(item.due_date).toLocaleString() : 'No deadline'}
               </Text>
               <Button title="Set Alarm" onPress={() => scheduleNotification(item)} />
             </View>

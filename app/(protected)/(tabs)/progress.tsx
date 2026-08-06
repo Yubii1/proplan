@@ -18,7 +18,7 @@ import {
 import TopBar from "@/src/components/TopBar";
 import { supabase } from "@/src/lib/supabase";
 import { colors, spacing } from "@/src/theme/theme";
-import { useFocusEffect } from "@react-navigation/native"; // ✅ added for screen refetch
+import { useFocusEffect } from "@react-navigation/native"; // added for screen refetch
 
 if (
   Platform.OS === "android" &&
@@ -77,7 +77,7 @@ export default function ProjectsScreen() {
     }, []),
   );
 
-  // ✅ Handle no-projects modal
+  // Handle no-projects modal
   useEffect(() => {
     if (!loading) {
       const allEmpty = STATUSES.every(
