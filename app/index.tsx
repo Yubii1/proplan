@@ -1,7 +1,13 @@
 // app/index.tsx
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { useAuth } from "../src/context/Authprovider";
 import { colors, spacing } from "../src/theme/theme";
 
@@ -11,12 +17,16 @@ export default function Index() {
 
   useEffect(() => {
     if (!loading && session) {
-      router.replace("/(protected)/(tabs)"); // replace with your home route
+      router.replace("/(protected)/(tabs)");
     }
-  }, [loading, session]);
+  }, [loading, session, router]);
 
   if (loading) {
-    return null; // can show splash here
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
   }
 
   return (

@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -44,7 +44,7 @@ export default function ProjectsScreen() {
 
   const isFetchingRef = useRef(false);
   const lastFetchedRef = useRef(0);
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     const now = Date.now();
     if (isFetchingRef.current || now - lastFetchedRef.current < 2000) return;
     try {
@@ -56,8 +56,9 @@ export default function ProjectsScreen() {
         .order("due_date", { ascending: true });
       if (error) throw error;
       const next = data || [];
-      const same = JSON.stringify(projects) === JSON.stringify(next);
-      if (!same) setProjects(next);
+      setProjects((prev) =>
+        JSON.stringify(prev) === JSON.stringify(next) ? prev : next,
+      );
     } catch (err: any) {
       console.log("Fetch error:", err);
       Alert.alert("Error", err?.message || "Failed to fetch projects");
@@ -66,15 +67,13 @@ export default function ProjectsScreen() {
       isFetchingRef.current = false;
       lastFetchedRef.current = Date.now();
     }
-  };
-
-  // Fetch on focus only to avoid double fetches
+  }, []);
 
   // Fetch when screen refocuses
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       fetchProjects();
-    }, []),
+    }, [fetchProjects]),
   );
 
   // Handle no-projects modal

@@ -1,5 +1,4 @@
 import TopBar from "@/src/components/TopBar";
-import { useSidebar } from "@/src/context/SidebarContext";
 import { supabase } from "@/src/lib/supabase";
 import * as Notifications from "expo-notifications";
 import React, { useEffect, useMemo, useState } from "react";
@@ -8,7 +7,6 @@ import { Calendar } from "react-native-calendars";
 import { colors, spacing } from "../../../src/theme/theme";
 
 export default function CalendarScreen() {
-  const openSidebar = useSidebar();
   const [projects, setProjects] = useState<any[]>([]);
 
   // Fetch only pending projects
@@ -55,7 +53,10 @@ export default function CalendarScreen() {
         title: `Reminder: ${project.title}`,
         body: `Project "${project.title}" is due soon.`,
       },
-      trigger: new Date(project.due_date), // fire at deadline
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: new Date(project.due_date),
+      },
     });
 
     Alert.alert("Alarm Set", `Notification scheduled for ${project.title}`);
@@ -63,11 +64,7 @@ export default function CalendarScreen() {
 
   return (
     <View style={styles.container}>
-      <TopBar
-        title="Calendar"
-        onMenuPress={openSidebar}
-        profileImage="https://via.placeholder.com/150"
-      />
+      <TopBar title="Calendar" />
 
       <View style={styles.card}>
         <Calendar

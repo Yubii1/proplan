@@ -30,25 +30,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [profile, setProfile] = useState<ProfileType | null>(null);
 
   const fetchProfile = useCallback(async (userId: string) => {
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('id, username, full_name, avatar_url')
-      .eq('id', userId)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, username, full_name, avatar_url')
+        .eq('id', userId)
+        .single();
 
-    if (!error && data) {
-      let logoUrl: string | null = null;
+      if (!error && data) {
+        let logoUrl: string | null = null;
 
-      // If user has avatar_url in DB, try to fetch the signed/public URL from storage
-      if (data.avatar_url) {
-        const { data: publicUrlData } = supabase.storage
-          .from('user-logos')
-          .getPublicUrl(data.avatar_url);
-        logoUrl = publicUrlData?.publicUrl ?? null;
+        if (data.avatar_url) {
+          const { data: publicUrlData } = supabase.storage
+            .from('user-logos')
+            .getPublicUrl(data.avatar_url);
+          logoUrl = publicUrlData?.publicUrl ?? null;
+        }
+
+        setProfile({ ...data, logo_url: logoUrl });
+      } else {
+        setProfile(null);
       }
-
-      setProfile({ ...data, logo_url: logoUrl });
-    } else {
+    } catch (e) {
+      console.warn('Failed to load profile:', e);
       setProfile(null);
     }
   }, []);
@@ -60,63 +64,71 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
+    let mounted = true;
+
     const initAuth = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      try {
+        const sessionResult = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 10000)),
+        ]);
 
-      if (session) {
-        const { data: userData, error } = await supabase.auth.getUser();
+        if (!mounted) return;
 
-        if (error || !userData.user) {
+        if (sessionResult === null) {
+          console.warn('Auth getSession timed out — clearing stale session');
           await supabase.auth.signOut();
           setSession(null);
           setProfile(null);
-        } else {
-          setSession(session);
-          await fetchProfile(session.user.id);
+          return;
         }
-      } else {
-        setSession(null);
-        setProfile(null);
-      }
 
-      setLoading(false);
+        const {
+          data: { session: initialSession },
+        } = sessionResult;
+
+        setSession(initialSession);
+        if (initialSession?.user?.id) {
+          // Don't block the splash/auth gate on profile fetch
+          fetchProfile(initialSession.user.id);
+        }
+      } catch (e) {
+        console.error('Auth init failed:', e);
+        if (mounted) {
+          setSession(null);
+          setProfile(null);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
     };
 
     initAuth();
 
-    // Listen for auth changes
+    // Never call getSession/getUser inside this callback — it deadlocks with initAuth.
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
-        if (newSession) {
-          const { data: userData, error } = await supabase.auth.getUser();
-          if (error || !userData.user) {
-            await supabase.auth.signOut();
-            setSession(null);
-            setProfile(null);
-          } else {
-            setSession(newSession);
-            await fetchProfile(newSession.user.id);
-          }
+      (_event, newSession) => {
+        if (!mounted) return;
+        setSession(newSession);
+        if (newSession?.user?.id) {
+          fetchProfile(newSession.user.id);
         } else {
-          setSession(null);
           setProfile(null);
         }
-      }
+      },
     );
 
-    // Refresh session every 15 minutes
     const refreshInterval = setInterval(async () => {
       const { data, error } = await supabase.auth.refreshSession();
       if (error) {
         console.error('Session refresh failed:', error.message);
-      } else if (data.session) {
+      } else if (data.session && mounted) {
         setSession(data.session);
       }
-    }, 15 * 60 * 1000); // 15 minutes
+    }, 15 * 60 * 1000);
 
     return () => {
+      mounted = false;
       authListener.subscription.unsubscribe();
       clearInterval(refreshInterval);
     };

@@ -25,10 +25,7 @@ export async function uploadUserLogo(userId: string, fileUri: string) {
   // upsert DB row: insert or update existing
   const { error: dbError } = await supabase
     .from('user_logos')
-    .upsert(
-      { user_id: userId, logo_url: publicUrl },
-      { onConflict: 'user_id', returning: 'representation' }
-    );
+    .upsert({ user_id: userId, logo_url: publicUrl }, { onConflict: 'user_id' });
 
   if (dbError) throw dbError;
 

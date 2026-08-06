@@ -15,9 +15,9 @@ function ProtectedLayoutContent() {
     if (!loading && !session) {
       router.replace("/auth/login");
     }
-  }, [loading, session]);
+  }, [loading, session, router]);
 
-  if (loading) {
+  if (loading || !session) {
     return (
       <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
         <ActivityIndicator size="large" />

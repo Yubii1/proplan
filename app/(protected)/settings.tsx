@@ -1,7 +1,6 @@
 import DropdownButton from '@/src/components/Dropdownbutton';
 import TopBar from '@/src/components/TopBar';
 import { useAuth } from '@/src/context/Authprovider';
-import { useSidebar } from '@/src/context/SidebarContext';
 import { supabase } from '@/src/lib/supabase';
 import { uploadUserLogo } from '@/src/utils/uploadUserLogo';
 import * as ImagePicker from 'expo-image-picker';
@@ -21,11 +20,9 @@ import {
 export default function SettingsScreen() {
   const { session } = useAuth();
   const userId = session?.user?.id;
-  const openSidebar = useSidebar();
-
   const [fullName, setFullName] = useState('');
   const [username, setUsername] = useState('');
-  const [email, setEmail] = useState(session?.user?.email || '');
+  const email = session?.user?.email || '';
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   const [localUri, setLocalUri] = useState<string | null>(null);
@@ -169,7 +166,7 @@ export default function SettingsScreen() {
 
   return (
     <View style={styles.container}>
-      <TopBar title="Settings" onMenuPress={openSidebar} showBackButton />
+      <TopBar title="Settings" showBackButton />
 
       <ScrollView contentContainerStyle={{ padding: 16 }}>
 
